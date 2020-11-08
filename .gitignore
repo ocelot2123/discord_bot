@@ -1,2 +1,4 @@
 .env
 nohup.out
+screenlog.*
+main.py.save
