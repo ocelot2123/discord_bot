@@ -30,16 +30,6 @@ emote_one = "1\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
 emote_two = "2\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
 emote_three = "3\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
 
-@bot.command()
-async def ice(ctx):
-	await ctx.send("DUN DUN DUN DUN DUN DUN DUN Vanilla Ice Ice Baby")
-@bot.command()
-async def ender(ctx):
-	await ctx.send("OK WeirdChamp")
-	await ctx.message.delete()
-@bot.command()
-async def test(ctx):
-	await ctx.send("OMEGALUL")
 
 @bot.command()
 async def commands(ctx):
@@ -132,6 +122,7 @@ async def play(ctx, time = default_play_time):
 @bot.command()
 async def changetime(ctx, time = default_play_time):
 	global play_time
+	global previous_msg
 	play_time = time
 	if previous_msg is not None:
 		await previous_msg.edit(content = session_msg())
