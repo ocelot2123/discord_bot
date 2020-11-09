@@ -1,15 +1,18 @@
 import discord
 from discord.ext import commands
-
 from datetime import datetime
 import pytz
 import os
-
 from dotenv import load_dotenv
+import mysql.connector as mysql
+from mysql.connector import errorcode
+import time
 
 load_dotenv()
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
+MYSQL_USER = os.getenv("MYSQL_USER")
+MYSQL_PASS = os.getenv("MYSQL_PASS")
 
 tz = pytz.timezone("Asia/Shanghai")
 date = datetime.now(tz = tz).strftime("%b %d")
@@ -29,6 +32,130 @@ bot = commands.Bot(command_prefix = '!')
 emote_one = "1\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
 emote_two = "2\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
 emote_three = "3\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
+
+
+#SQL stuff
+#SQL statement for adding to the people table
+add_people = """INSERT INTO people
+				(disc_id, disc_name, first_name, last_name, address, phone_num, description, gift_advisor)
+				VALUES ({disc_id}, {disc_name}, {first_name}, {last_name}, {address}, {phone_num}, {description}, {gift_advisor})
+				ON DUPLICATE KEY UPDATE disc_name={disc_name}, first_name={first_name}, last_name={last_name}, address={address}, phone_num={phone_num}, description={description}, gift_advisor={gift_advisor}"""
+
+@bot.event
+async def on_ready():
+	await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = "DM me with !secretsanta to join on this year\'s secret santa!"))
+
+	create_table = """CREATE TABLE people (
+		disc_id BIGINT NOT NULL,
+		disc_name varchar(30) NOT NULL,
+		first_name varchar(20) NOT NULL,
+		last_name varchar(20) NOT NULL,
+		address varchar(150) NOT NULL,
+		phone_num varchar(20) NOT NULL,
+		description varchar(200) NOT NULL,
+		gift_advisor varchar(40) NOT NULL,
+		santa varchar(30) DEFAULT NULL,
+		recipient varchar(30) DEFAULT NULL,
+		PRIMARY KEY (disc_id))"""
+
+	#connect to DB	
+	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
+							host = '127.0.0.1',
+							database = 'mydatabase',
+							auth_plugin= 'caching_sha2_password')
+
+	cursor = db.cursor()
+
+	try:
+		print("Creating table")
+		cursor.execute(create_table)
+	except mysql.Error as err:
+		if err.errno == errorcode.ER_TABLE_EXISTS_ERROR:
+			print("table exists.")
+		else:
+			print(err.msg)
+	else:
+		print("OK")
+	db.close()
+	cursor.close()
+
+@bot.command()
+async def secretsanta(ctx):
+
+	channel_type = ctx.channel.type
+	if channel_type == discord.ChannelType.private:
+		data_people = dict()
+		data_people['disc_id'] = ctx.author.id
+		"""
+		data_people dict format
+		data_people['disc_id'] = discord id int
+		data_people['disc_name'] = discord name string
+		data_people['first_name'] = first name string
+		data_people['last_name'] = lats name string
+		data_people['address'] = address string
+		data_people['phone_num'] = phone num string
+		data_people['description'] = description string
+		data_people['gift_advisor'] = gift advisor string
+		"""
+
+		s = "Hi there, I will be asking you a series of questions about your personal details so your secret santa can send their gift to you! "
+		s += "Feel free to call this function again if you need to change anything about your personal details.\n\n\n"
+		s += "Data privacy: data will be deleted after this thing is over (I can stream that or something), but I will not be encrypting the data for privacy because I'm too lazy, "
+		s += "but I will be the only one who has access to the data and you just have to take my word that I wont do anything with it. -Ed"
+		await ctx.author.send(s)
+
+
+		data_people["disc_name"] = "\'" + ctx.author.name + "\'"
+		channel_id = ctx.channel.id
+		time.sleep(3)
+		def check(msg):
+			return msg.channel.id == channel_id and msg.author == ctx.author
+		
+		await ctx.author.send("Please enter your first name:")
+		msg = await bot.wait_for('message', check=check)
+		data_people["first_name"] = "\'" + msg.content + "\'"
+		time.sleep(1.5)
+		await ctx.author.send("Please enter your last name:")
+		msg = await bot.wait_for('message', check=check)
+		data_people["last_name"] = "\'" + msg.content + "\'"
+		time.sleep(1.5)
+		await ctx.author.send("Please enter your full address:")
+		msg = await bot.wait_for('message', check=check)
+		data_people["address"] = "\'" + msg.content + "\'"
+		time.sleep(1.5)
+		await ctx.author.send("Please enter your phone number (with country code please):")
+		msg = await bot.wait_for('message', check=check)
+		data_people["phone_num"] = "\'" + msg.content + "\'"
+		time.sleep(1.5)
+		await ctx.author.send("Please write a short description of what you like so your secret santa can have an idea of what to get you:")
+		msg = await bot.wait_for('message', check=check)
+		data_people["description"] = "\'" + msg.content + "\'"
+		time.sleep(1.5)
+		await ctx.author.send("Please designate a gift advisor that your secret santa can consult with for what to get you (reply with n if you don't want to input one):")
+		msg = await bot.wait_for('message', check=check)
+		if msg.content.lower() == 'n':
+			data_people["gift_advisor"] = "\'N/A\'"
+		else:
+			data_people["gift_advisor"] = "\'" + msg.content + "\'"
+		time.sleep(1.5)
+		
+		db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
+							host = '127.0.0.1',
+							database = 'mydatabase',
+							auth_plugin= 'caching_sha2_password')
+
+		cursor = db.cursor()
+		try:
+			cursor.execute(add_people.format(**data_people))
+			await ctx.author.send("Information received")
+
+		except Exception as err:
+			await ctx.author.send("oops something went wrong, send this to Ed:\n" + err)
+			print(err)
+
+		db.commit()
+		cursor.close()
+		db.close()
 
 
 @bot.command()
