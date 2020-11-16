@@ -3,6 +3,7 @@ from discord.ext import commands
 from datetime import datetime
 import pytz
 import os
+import random
 from dotenv import load_dotenv
 import mysql.connector as mysql
 from mysql.connector import errorcode
@@ -41,6 +42,79 @@ add_people = """INSERT INTO people
 				VALUES ({disc_id}, {disc_name}, {first_name}, {last_name}, {address}, {phone_num}, {description}, {gift_advisor})
 				ON DUPLICATE KEY UPDATE disc_name={disc_name}, first_name={first_name}, last_name={last_name}, address={address}, phone_num={phone_num}, description={description}, gift_advisor={gift_advisor}"""
 
+@bot.command()
+async def drawsanta(ctx):
+	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
+							host = '127.0.0.1',
+							database = 'mydatabase',
+							auth_plugin= 'caching_sha2_password')
+
+	cursor = db.cursor()
+	people_list = list()
+	dup_list = list()
+	dup_dup_list = list()
+	select_sql = "SELECT disc_id FROM people;"
+	update_recip_sql = "UPDATE people recipient = {0} WHERE disc_id = {1}"
+	update_santa_sql = "UPDATE people santa = {0} WHERE disc_id = {1}"
+	cursor.execute(select_sql)
+	for res in cursor:
+		for disc_id in res:
+			people_list.append(disc_id)
+			dup_list.append(disc_id)
+			dup_dup_list.append(disc_id)
+
+	for people in dup_dup_list:
+		recip_id = ""
+		if len(dup_list) == 2 and len(list(set(people_list) & set(dup_list))) > 0:
+			if people != list(set(people_list) & set(dup_list))[0]:
+				recip_id = list(set(people_list) & set(dup_list))[0]
+			else:
+				for recip in dup_list:
+					if recip != people:
+						recip_id = recip
+		while recip_id == people or recip_id == "":
+			recip_id = random.choice(dup_list)
+
+		dup_list.remove(recip_id)
+		people_list.remove(people)
+		cursor.execute(update_recip_sql.format(recip_id, people))
+		cursor.execute(update_santa_sql.format(people, recip_id))
+
+	await ctx.send("ok")
+	cursor.close()
+	db.close()
+
+@bot.command()
+async def sendinfo(ctx):
+	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
+							host = '127.0.0.1',
+							database = 'mydatabase',
+							auth_plugin= 'caching_sha2_password')
+	cursor = db.cursor()
+	select_sql = "SELECT disc_id, recipient FROM people;"
+	select_santa_sql = "SELECT * FROM people WHERE disc_id = {0}"
+	cursor.execute(select_sql)
+	user_recip_pair = list()
+	for res in cursor:
+		user_recip_pair.append(res)
+
+	cursor = db.cursor()
+	for pair in user_recip_pair:
+		user_id = pair[0]
+		recip_id = pair[1]
+		user = bot.get_user(user_id)
+		cursor.execute(select_santa_sql.format(recip_id))
+		for res in cursor:
+			await user.send("Full Name:\n" + res[2] + " " + res[3])
+			await user.send("Address:\n" + res[4])
+			await user.send("Phone number:\n" + res[5])
+			await user.send("Description:\n" + res[6])
+			await user.send("Please consult their gift advisor if you have questions on what to get them:\n" + res[7])
+	
+	await ctx.send("done")
+	cursor.close()
+	db.close()
+
 @bot.event
 async def on_ready():
 	await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = "DM me with !secretsanta to join on this year\'s secret santa!"))
@@ -78,6 +152,26 @@ async def on_ready():
 		print("OK")
 	db.close()
 	cursor.close()
+
+@bot.command()
+async def santalist(ctx):
+	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
+							host = '127.0.0.1',
+							database = 'mydatabase',
+							auth_plugin= 'caching_sha2_password')
+
+	cursor = db.cursor()
+
+	sql = "SELECT first_name FROM people;"
+	cursor.execute(sql)
+	out_s = "Heres a list of people who signed up:\n"
+	for i, res in enumerate(cursor, 1):
+		for first_name in res:
+			out_s += str(i) + ". " + first_name + "\n"
+	await ctx.send(out_s)
+
+	cursor.close()
+	db.close()
 
 @bot.command()
 async def secretsanta(ctx):
