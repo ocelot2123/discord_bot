@@ -54,8 +54,8 @@ async def drawsanta(ctx):
 	dup_list = list()
 	dup_dup_list = list()
 	select_sql = "SELECT disc_id FROM people;"
-	update_recip_sql = "UPDATE people recipient = {0} WHERE disc_id = {1}"
-	update_santa_sql = "UPDATE people santa = {0} WHERE disc_id = {1}"
+	update_recip_sql = "UPDATE people SET recipient = {0} WHERE disc_id = {1}"
+	update_santa_sql = "UPDATE people SET santa = {0} WHERE disc_id = {1}"
 	cursor.execute(select_sql)
 	for res in cursor:
 		for disc_id in res:
@@ -80,9 +80,10 @@ async def drawsanta(ctx):
 		cursor.execute(update_recip_sql.format(recip_id, people))
 		cursor.execute(update_santa_sql.format(people, recip_id))
 
-	await ctx.send("ok")
+	db.commit()
 	cursor.close()
 	db.close()
+	await ctx.send("ok")
 
 @bot.command()
 async def sendinfo(ctx):
@@ -102,7 +103,8 @@ async def sendinfo(ctx):
 	for pair in user_recip_pair:
 		user_id = pair[0]
 		recip_id = pair[1]
-		user = bot.get_user(user_id)
+		user = await bot.fetch_user(user_id)
+
 		cursor.execute(select_santa_sql.format(recip_id))
 		for res in cursor:
 			await user.send("Full Name:\n" + res[2] + " " + res[3])
@@ -128,11 +130,12 @@ async def on_ready():
 		phone_num varchar(20) NOT NULL,
 		description varchar(200) NOT NULL,
 		gift_advisor varchar(40) NOT NULL,
-		santa varchar(30) DEFAULT NULL,
-		recipient varchar(30) DEFAULT NULL,
+		santa BIGINT DEFAULT NULL,
+		recipient BIGINT DEFAULT NULL,
 		PRIMARY KEY (disc_id))"""
 
 	#connect to DB	
+	"""
 	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
 							host = '127.0.0.1',
 							database = 'mydatabase',
@@ -152,6 +155,7 @@ async def on_ready():
 		print("OK")
 	db.close()
 	cursor.close()
+	"""
 
 @bot.command()
 async def santalist(ctx):
