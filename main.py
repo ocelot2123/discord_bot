@@ -119,8 +119,8 @@ async def sendinfo(ctx):
 
 @bot.event
 async def on_ready():
-	await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = "DM me with !secretsanta to join on this year\'s secret santa!"))
-
+	#await bot.change_presence(status=discord.Status.online, activity=discord.Activity(type = discord.ActivityType.listening, name = "DM me with !secretsanta to join on this year\'s secret santa!"))
+	print("connected to server")
 	create_table = """CREATE TABLE people (
 		disc_id BIGINT NOT NULL,
 		disc_name varchar(30) NOT NULL,
