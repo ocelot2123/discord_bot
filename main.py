@@ -283,7 +283,7 @@ def get_name(s):
 
 
 @bot.command()
-async def drawsanta(ctx):
+async def nodrawsanta(ctx):
 	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
 							host = '127.0.0.1',
 							database = 'mydatabase',
@@ -326,7 +326,7 @@ async def drawsanta(ctx):
 	await ctx.send("ok")
 
 @bot.command()
-async def sendinfo(ctx):
+async def nosendinfo(ctx):
 	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
 							host = '127.0.0.1',
 							database = 'mydatabase',
@@ -358,7 +358,7 @@ async def sendinfo(ctx):
 	db.close()
 
 @bot.command()
-async def santalist(ctx):
+async def nosantalist(ctx):
 	db = mysql.connect(user = MYSQL_USER, password = MYSQL_PASS,
 							host = '127.0.0.1',
 							database = 'mydatabase',
@@ -378,7 +378,7 @@ async def santalist(ctx):
 	db.close()
 
 @bot.command()
-async def secretsanta(ctx):
+async def nosecretsanta(ctx):
 
 	channel_type = ctx.channel.type
 	if channel_type == discord.ChannelType.private:
