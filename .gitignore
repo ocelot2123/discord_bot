@@ -2,3 +2,4 @@
 nohup.out
 screenlog.*
 main.py.save
+*.orig
