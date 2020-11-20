@@ -4,23 +4,12 @@ from utils import *
 import os
 from dotenv import load_dotenv
 
-import time
-
 load_dotenv()
 
 DISCORD_TOKEN = os.getenv("DISCORD_TOKEN")
 
 startup_extensions = ["amongusbot", "secretsanta"]
 bot = commands.Bot(command_prefix = '!')
-
-
-#SQL stuff
-#SQL statement for adding to the people table
-add_people = """INSERT INTO people
-				(disc_id, disc_name, first_name, last_name, address, phone_num, description, gift_advisor)
-				VALUES ({disc_id}, {disc_name}, {first_name}, {last_name}, {address}, {phone_num}, {description}, {gift_advisor})
-				ON DUPLICATE KEY UPDATE disc_name={disc_name}, first_name={first_name}, last_name={last_name}, address={address}, phone_num={phone_num}, description={description}, gift_advisor={gift_advisor}"""
-
 
 @bot.event
 async def on_ready():

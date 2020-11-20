@@ -5,10 +5,18 @@ from mysql.connector import errorcode
 from dotenv import load_dotenv
 import random
 import os
+import time
 
 load_dotenv()
 MYSQL_USER = os.getenv("MYSQL_USER")
 MYSQL_PASS = os.getenv("MYSQL_PASS")
+#SQL stuff
+#SQL statement for adding to the people table
+add_people = """INSERT INTO people
+				(disc_id, disc_name, first_name, last_name, address, phone_num, description, gift_advisor)
+				VALUES ({disc_id}, {disc_name}, {first_name}, {last_name}, {address}, {phone_num}, {description}, {gift_advisor})
+				ON DUPLICATE KEY UPDATE disc_name={disc_name}, first_name={first_name}, last_name={last_name}, address={address}, phone_num={phone_num}, description={description}, gift_advisor={gift_advisor}"""
+
 
 class SecretSanta():
     def __init__(self, bot):
@@ -76,7 +84,7 @@ class SecretSanta():
         for pair in user_recip_pair:
             user_id = pair[0]
             recip_id = pair[1]
-            user = await bot.fetch_user(user_id)
+            user = await self.bot.fetch_user(user_id)
 
             cursor.execute(select_santa_sql.format(recip_id))
             for res in cursor:
@@ -143,27 +151,27 @@ class SecretSanta():
                 return msg.channel.id == channel_id and msg.author == ctx.author
             
             await ctx.author.send("Please enter your first name:")
-            msg = await bot.wait_for('message', check=check)
+            msg = await self.bot.wait_for('message', check=check)
             data_people["first_name"] = "\'" + msg.content + "\'"
             time.sleep(1.5)
             await ctx.author.send("Please enter your last name:")
-            msg = await bot.wait_for('message', check=check)
+            msg = await self.bot.wait_for('message', check=check)
             data_people["last_name"] = "\'" + msg.content + "\'"
             time.sleep(1.5)
             await ctx.author.send("Please enter your full address:")
-            msg = await bot.wait_for('message', check=check)
+            msg = await self.bot.wait_for('message', check=check)
             data_people["address"] = "\'" + msg.content + "\'"
             time.sleep(1.5)
             await ctx.author.send("Please enter your phone number (with country code please):")
-            msg = await bot.wait_for('message', check=check)
+            msg = await self.bot.wait_for('message', check=check)
             data_people["phone_num"] = "\'" + msg.content + "\'"
             time.sleep(1.5)
             await ctx.author.send("Please write a short description of what you like so your secret santa can have an idea of what to get you:")
-            msg = await bot.wait_for('message', check=check)
+            msg = await self.bot.wait_for('message', check=check)
             data_people["description"] = "\'" + msg.content + "\'"
             time.sleep(1.5)
             await ctx.author.send("Please designate a gift advisor that your secret santa can consult with for what to get you (reply with n if you don't want to input one):")
-            msg = await bot.wait_for('message', check=check)
+            msg = await self.bot.wait_for('message', check=check)
             if msg.content.lower() == 'n':
                 data_people["gift_advisor"] = "\'N/A\'"
             else:

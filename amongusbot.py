@@ -61,7 +61,7 @@ class AmongUsBot():
         def check(reaction, user):
             return reaction.message == msg
         while map_vote:
-            reaction, user = await bot.wait_for("reaction_add", check = check)
+            reaction, user = await self.bot.wait_for("reaction_add", check = check)
             if user.display_name not in map_vote_players:
                 map_vote_players.add(user.display_name)
                 if reaction.emoji == emote_one:
@@ -107,7 +107,7 @@ class AmongUsBot():
         def check(reaction, user):
             return reaction.message == previous_msg
         while True:
-            reaction, user = await bot.wait_for("reaction_add", check = check)
+            reaction, user = await self.bot.wait_for("reaction_add", check = check)
             if user.display_name not in players:
                 players.append(user.display_name)
             await previous_msg.edit(content = session_msg())
