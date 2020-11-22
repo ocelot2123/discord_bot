@@ -20,12 +20,12 @@ emote_two = "2\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
 emote_three = "3\N{VARIATION SELECTOR-16}\N{COMBINING ENCLOSING KEYCAP}"
 
 
-class AmongUsBot():
+class AmongUsBot(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
             
-    @commands.command()
-    async def commands(self, ctx):
+    @commands.command(name="commands")
+    async def _commands(self, ctx):
         out_string =""
         out_string += "-!play = starts a queue for 21:00\n"
         out_string += "-!play [time] = starts a queue for [time]\n"

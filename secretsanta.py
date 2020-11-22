@@ -18,7 +18,7 @@ add_people = """INSERT INTO people
 				ON DUPLICATE KEY UPDATE disc_name={disc_name}, first_name={first_name}, last_name={last_name}, address={address}, phone_num={phone_num}, description={description}, gift_advisor={gift_advisor}"""
 
 
-class SecretSanta():
+class SecretSanta(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
     
