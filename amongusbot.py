@@ -90,8 +90,10 @@ class AmongUsBot(commands.Cog):
         play_time = default_play_time
         await ctx.send("Yes")
         if previous_msg is not None:
-            await previous_msg.edit(content = session_msg())
-
+            try:
+                await previous_msg.edit(content = session_msg())
+            except:
+                previous_msg = None
     @commands.command()
     async def play(self, ctx, time = default_play_time):
         global play_time
@@ -100,7 +102,10 @@ class AmongUsBot(commands.Cog):
         if time == "reset":
             players = []
         if previous_msg is not None:
-            await previous_msg.delete()
+            try:
+                await previous_msg.delete()
+            except:
+                previous_msg = None
         play_time = time
         previous_msg = await ctx.send(session_msg())
         await previous_msg.pin()
@@ -118,7 +123,10 @@ class AmongUsBot(commands.Cog):
         global previous_msg
         play_time = time
         if previous_msg is not None:
-            await previous_msg.edit(content = session_msg())
+            try:
+                await previous_msg.edit(content = session_msg())
+            except:
+                previous_msg = None
         await ctx.send("Game time updated")
 
     @commands.command()
@@ -137,7 +145,10 @@ class AmongUsBot(commands.Cog):
         if register_name.upper() not in (name.upper() for name in players):
             players.append(register_name)
             if previous_msg is not None:
-                await previous_msg.edit(content = session_msg())
+                try:
+                    await previous_msg.edit(content = session_msg())
+                except:
+                    previous_msg = None
             else:
                 previous_msg = await ctx.send(session_msg())
             await ctx.message.delete()
@@ -160,7 +171,10 @@ class AmongUsBot(commands.Cog):
         if register_name.upper() in (name.upper() for name in players):
             players.remove(register_name)
             if previous_msg is not None:
-                await previous_msg.edit(content = session_msg())
+                try:
+                    await previous_msg.edit(content = session_msg())
+                except:
+                    previous_msg = None
             else:
                 previous_msg = await ctx.send(session_msg())
             await ctx.message.delete()
@@ -172,7 +186,10 @@ class AmongUsBot(commands.Cog):
         global previous_msg
         global players
         if previous_msg is not None:
-            await previous_msg.delete()
+            try:
+                await previous_msg.delete()
+            except:
+                previous_msg = None
             previous_msg = await ctx.send(session_msg())
             await previous_msg.pin()
         else:
