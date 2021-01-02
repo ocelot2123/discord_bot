@@ -86,6 +86,7 @@ class AmongUsBot(commands.Cog):
     async def reset(self, ctx):
         global players
         global play_time
+        global previous_msg
         players = []
         play_time = default_play_time
         await ctx.send("Yes")
